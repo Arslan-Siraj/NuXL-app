@@ -255,7 +255,6 @@ jobs:
         cp -r .streamlit streamlit_exe
         cp app.py streamlit_exe
         cp settings.json streamlit_exe
-        cp -r gdpr_consent streamlit_exe
         cp ${{ env.APP_NAME }}.bat streamlit_exe
         cp -r openms-bin streamlit_exe
         cp -r openms-thirdparty streamlit_exe
