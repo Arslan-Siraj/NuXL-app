@@ -300,3 +300,24 @@ def rename_files(directory: str) -> None:
             os.rename(old_file, new_file)
 
     return None
+
+def delete_files(directory: str, remove_files_end_with: str = '.raw.mzML') -> None:
+    """
+    delete all files in the given directory by removing '.raw.mzML'.
+
+    Args:
+        directory (str): The path to the directory containing the files to be renamed.
+
+    Returns:
+        None
+    """
+    # Iterate over all files in the given directory
+    for filename in os.listdir(directory):
+        # Check if the file ends with .raw.mzML
+        if filename.endswith(remove_files_end_with):
+           file_path = os.path.join(directory, filename)
+           os.remove(file_path)
+
+    # st.info("call delete files")
+
+    return None
