@@ -280,6 +280,7 @@ import os
 def rename_files(directory: str) -> None:
     """
     Renames files in the given directory by removing '.raw' from files ending with '.raw.mzML'.
+    If a file with the target name already exists, it is deleted before renaming.
 
     Args:
         directory (str): The path to the directory containing the files to be renamed.
@@ -296,6 +297,11 @@ def rename_files(directory: str) -> None:
             # Construct full file paths
             old_file = os.path.join(directory, filename)
             new_file = os.path.join(directory, new_filename)
+            
+            # If the target file already exists, delete it
+            if os.path.exists(new_file):
+                os.remove(new_file)
+            
             # Rename the file
             os.rename(old_file, new_file)
 

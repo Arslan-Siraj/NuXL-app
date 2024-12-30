@@ -69,7 +69,7 @@ load_example_mzML_files()
 # take mzML files from current session file
 mzML_files_ = [f.name for f in Path(st.session_state.workspace, "mzML-files").iterdir()]
 
-delete_files(directory = Path(st.session_state.workspace, "mzML-files"), remove_files_end_with = '.raw.mzML')
+#delete_files(directory = Path(st.session_state.workspace, "mzML-files"), remove_files_end_with = '.raw.mzML')
 
 # make sure fasta example files in current session state
 load_example_fasta_files()
@@ -226,111 +226,117 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
         # terminate subprocess
         terminate_subprocess()
         st.warning("Process terminated. The analysis may not be complete.")
-        
+
         # clear form
         st.rerun() 
 
     # with st.spinner("Running analysis... Please wait until analysis done 😑"): #without status/ just spinner button
     with st.status("Running analysis... Please wait until analysis done 😑"):
+
+        if mzML_file_path.endswith(".raw.mzML"):
+            st.warning(f"(.raw.mzML) not supported, please select (.raw) or (.mzML) format",  icon="ℹ️")
         
-        # If session state is local
-        if st.session_state.location == "local":
-            # If local in current directory of app  like bin and percolator folder
-            OpenNuXL_exec = os.path.join(os.getcwd(),'openms-bin', 'OpenNuXL')
-            perc_exec = os.path.join(os.getcwd(), 'openms-thirdparty', 'Percolator', 'percolator.exe') 
-            thermo_exec_path = os.path.join(os.getcwd(), 'openms-thirdparty', 'ThermoRawFileParser', 'ThermoRawFileParser.exe')
+        else:
+            # If session state is local
+            if st.session_state.location == "local":
+                # If local in current directory of app  like bin and percolator folder
+                OpenNuXL_exec = os.path.join(os.getcwd(),'openms-bin', 'OpenNuXL')
+                perc_exec = os.path.join(os.getcwd(), 'openms-thirdparty', 'Percolator', 'percolator.exe') 
+                thermo_exec_path = os.path.join(os.getcwd(), 'openms-thirdparty', 'ThermoRawFileParser', 'ThermoRawFileParser.exe')
 
 
-            #if mzML_file_path.endswith(".raw.mzML"):
-            #    st.info(".raw.mzml")
-            #    mzML_to_check = mzML_file_path.replace(".raw.mzML", ".mzML")
+                #if mzML_file_path.endswith(".raw.mzML"):
+                #    st.info(".raw.mzml")
+                #    mzML_to_check = mzML_file_path.replace(".raw.mzML", ".mzML")
 
-            # if os.path.exists(mzML_to_check):
-            #        st.info(f"Deleting {mzML_to_check}...", icon="ℹ️")
-            #        os.remove(mzML_to_check)
+                # if os.path.exists(mzML_to_check):
+                #        st.info(f"Deleting {mzML_to_check}...", icon="ℹ️")
+                #        os.remove(mzML_to_check)
 
-            #    new_file_path = mzML_file_path.replace(".raw.mzML", ".mzML")
-            #    os.rename(mzML_file_path, new_file_path)
+                #    new_file_path = mzML_file_path.replace(".raw.mzML", ".mzML")
+                #    os.rename(mzML_file_path, new_file_path)
 
-            #    st.info("Selected file rename .raw.mzML--> .mzML", icon="ℹ️")
+                #    st.info("Selected file rename .raw.mzML--> .mzML", icon="ℹ️")
 
+                    
+                #    args = [OpenNuXL_exec, "-in", new_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
+                #                "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
+                #                "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
+                #                "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme, 
+                #                "-modifications:variable_max_per_peptide", Variable_max_per_peptide
+                #                ]
+
+                #    args.extend(["-percolator_executable", perc_exec])
                 
-            #    args = [OpenNuXL_exec, "-in", new_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
-            #                "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
-            #                "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
-            #                "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme, 
-            #                "-modifications:variable_max_per_peptide", Variable_max_per_peptide
-            #                ]
+                #else:
+                # In docker it executable on path
+                args = ["OpenNuXL", "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
+                                "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
+                                "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
+                                "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
+                                "-modifications:variable_max_per_peptide", Variable_max_per_peptide
+                                ]
 
-            #    args.extend(["-percolator_executable", perc_exec])
-            
-            #else:
-            # In docker it executable on path
-            args = ["OpenNuXL", "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
+                args.extend(["-percolator_executable", perc_exec])
+
+            # If session state is online/docker
+            else:  
+
+                #if mzML_file_path.endswith(".raw.mzML"):
+                #    new_file_path = mzML_file_path.replace(".raw.mzML", ".mzML")
+                #    os.rename(mzML_file_path, new_file_path)
+
+                #  st.info("Selected file rename .raw.mzML--> .mzML", icon="ℹ️")
+
+                    # In docker it executable on path
+                #    args = ["OpenNuXL", "-in", new_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
+                #                "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
+                #                "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
+                #                "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
+                #                "-modifications:variable_max_per_peptide", Variable_max_per_peptide
+                #                ]
+                
+                #else:
+                thermo_exec_path = "/thirdparty/ThermoRawFileParser/ThermoRawFileParser.exe"
+                # In docker it executable on path
+                args = ["OpenNuXL", "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
                             "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
                             "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
                             "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
                             "-modifications:variable_max_per_peptide", Variable_max_per_peptide
                             ]
+                # percolator on path in docker container
 
-            args.extend(["-percolator_executable", perc_exec])
+            # If variable modification provided
+            if variable_modification: 
+                args.extend(["-modifications:variable"])
+                args.extend(variable_modification)
 
-        # If session state is online/docker
-        else:  
-
-            #if mzML_file_path.endswith(".raw.mzML"):
-            #    new_file_path = mzML_file_path.replace(".raw.mzML", ".mzML")
-            #    os.rename(mzML_file_path, new_file_path)
-
-            #  st.info("Selected file rename .raw.mzML--> .mzML", icon="ℹ️")
-
-                # In docker it executable on path
-            #    args = ["OpenNuXL", "-in", new_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
-            #                "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
-            #                "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
-            #                "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
-            #                "-modifications:variable_max_per_peptide", Variable_max_per_peptide
-            #                ]
+            # If fixed modification provided
+            if fixed_modification: 
+                args.extend(["-modifications:fixed"])
+                args.extend(fixed_modification)
             
-            #else:
-            thermo_exec_path = "/thirdparty/ThermoRawFileParser/ThermoRawFileParser.exe"
-            # In docker it executable on path
-            args = ["OpenNuXL", "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
-                        "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
-                        "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
-                        "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
-                        "-modifications:variable_max_per_peptide", Variable_max_per_peptide
-                        ]
-            # percolator on path in docker container
+            # Add any additional variables needed for the subprocess (if any)
+            variables = []  
 
-        # If variable modification provided
-        if variable_modification: 
-            args.extend(["-modifications:variable"])
-            args.extend(variable_modification)
+            # want to see the command values and argues
+            #message = f"Running '{' '.join(args)}'"
+            st.info(f"Analyzing {mzML_file_path}",  icon="ℹ️")
 
-        # If fixed modification provided
-        if fixed_modification: 
-            args.extend(["-modifications:fixed"])
-            args.extend(fixed_modification)
-        
-        # Add any additional variables needed for the subprocess (if any)
-        variables = []  
+            # run subprocess command
+            run_subprocess(args, variables, result_dict)
 
-        # want to see the command values and argues
-        message = f"Running '{' '.join(args)}'"
-        st.code(message)
+            #rename the file .raw.mzML --> .mzML
+            rename_files(Path(st.session_state.workspace, "mzML-files"))
+            
+            # Use st.experimental_thread to run the subprocess asynchronously
+            # terminate_flag = threading.Event()
+            # thread = threading.Thread(target=run_subprocess, args=(args, variables, result_dict))
+            # thread.start()
+            # thread.join()
 
-        # run subprocess command
-        run_subprocess(args, variables, result_dict)
-
-        #rename the file .raw.mzML --> .mzML
-        rename_files(Path(st.session_state.workspace, "mzML-files"))
-        
-        # Use st.experimental_thread to run the subprocess asynchronously
-        # terminate_flag = threading.Event()
-        # thread = threading.Thread(target=run_subprocess, args=(args, variables, result_dict))
-        # thread.start()
-        # thread.join()
+        delete_files(directory = Path(st.session_state.workspace, "mzML-files"), remove_files_end_with = '.raw.mzML')
 
     # if run_subprocess success (no need if not success because error will show/display in run_subprocess command)
     if result_dict["success"]:
