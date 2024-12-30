@@ -280,9 +280,10 @@ jobs:
         Reach out to us:
         - Join our Discord server for support and community discussions: https://discord.com/invite/4TAGhqJ7s5
         - Contribute or stay updated with the latest OpenMS web app developments on GitHub: https://github.com/OpenMS/streamlit-template
+        - Checkout the ${{ env.APP_NAME }} on Github: https://github.com/Arslan-Siraj/nuxl-app
         - Visit our website for more information: https://openms.de/
         
-        Thank you for using ${{ env.APP_NAME }}!
+        Thanks for using ${{ env.APP_NAME }}!
         EOF
         
     - name: Install WiX Toolset
@@ -311,8 +312,8 @@ jobs:
         mv streamlit_exe/* SourceDir
         cp ShowSuccessMessage.vbs SourceDir
         cp assets/openms_license.rtf SourceDir
-        # Logo of app
-        cp assets/openms.ico SourceDir
+        # Logo of app : from https://www.xiconeditor.com/
+        cp assets/openNuXL.ico SourceDir
         
     - name: Generate WiX XML file
       shell: bash
@@ -361,7 +362,7 @@ jobs:
             </Component>
         
             <!-- Provide icon here; it should exist in the SourceDir folder -->
-            <Icon Id="AppIcon" SourceFile="SourceDir/openms.ico" />
+            <Icon Id="AppIcon" SourceFile="SourceDir/openNuXL.ico" />
         
             <!-- Run app directly after installation -->
             <!-- <CustomAction Id="RunApp" Directory="AppSubFolder" Execute="deferred" Return="asyncNoWait" Impersonate="no"
