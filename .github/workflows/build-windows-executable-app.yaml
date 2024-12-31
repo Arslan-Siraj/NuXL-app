@@ -201,7 +201,7 @@ jobs:
       run: |
         curl -L -o dlls_for_windows.zip https://github.com/Arslan-Siraj/nuxl_webapp_supporting_files/releases/download/v0.0.1/dlls_for_windows.zip
         unzip dlls_for_windows.zip -d dlls_windows
-        cp -r dlls_windows/* openms-bin
+        cp -r dlls_windows/* openms-bin/
 
     - name: List files in openms-bin
       run: |
