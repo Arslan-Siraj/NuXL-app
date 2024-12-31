@@ -37,12 +37,18 @@ tabs = st.tabs(tabs)
 with tabs[0]:
     #create form of mzML-upload
     with st.form("mzML-upload", clear_on_submit=True):
-        #create file uploader to take mzML files
-        files = st.file_uploader(
-            "Upload mzML/raw files", accept_multiple_files=(st.session_state.location == "local"), type=['.mzML', '.raw'], help="Input file (Valid formats: 'mzML' or 'raw')")
+        if st.session_state.location == "local":
+            #create file uploader to take mzML files
+            files = st.file_uploader(
+                "Upload mzML/raw files", accept_multiple_files=(st.session_state.location == "local"), type=['.mzML', '.raw'], help="Input file (Valid formats: 'mzML' or 'raw')  accept multiples")
+        else:
+             files = st.file_uploader(
+                "Upload mzML/raw files", accept_multiple_files=(st.session_state.location == "local"), type=['.mzML', '.raw'], help="Input file (Valid formats: 'mzML' or 'raw')")
+        
         cols = st.columns(3)
         #file uploader submit button
         if cols[1].form_submit_button("Add mzML/raw file to workspace", type="primary"):
+            print(files)
             if not files:
                 st.warning("Upload some files first.")
             else:
@@ -61,6 +67,7 @@ with tabs[0]:
         show_table(df)
         v_space(1)
         # Remove files
+        mzML_dir: Path = Path(st.session_state.workspace, "mzML-files")
         with st.expander("🗑️ Remove uploaded mzML/raw files"):
             to_remove = st.multiselect("select mzML/raw files",
                                     options=[f.name for f in sorted(mzML_dir.iterdir())])

@@ -13,9 +13,6 @@ from src.common import *
 import streamlit.components.v1 as st_components
 
 
-consent_component = st_components.declare_component("gdpr_consent", path=Path("gdpr_consent"))
-
-
 def delete_all_pages(main_script_path_str: str) -> None:
     """
     Delete all pages except the main page from an app's configuration.
@@ -206,6 +203,7 @@ def captcha_control():
         ga = st.session_state.settings['analytics']['google-analytics']['enabled']
         pp = st.session_state.settings['analytics']['piwik-pro']['enabled']
         if (ga or pp) and (st.session_state.tracking_consent is None):
+            consent_component = st_components.declare_component("gdpr_consent", path=Path("gdpr_consent"))
             with st.spinner():
                 # Ask for consent
                 st.session_state.tracking_consent = consent_component(

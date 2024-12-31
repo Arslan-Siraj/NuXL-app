@@ -17,8 +17,9 @@ def add_to_selected_mzML(filename: str):
     # Check if file in params selected mzML files, if not add it
     if filename not in st.session_state["selected-mzML-files"]:
         st.session_state["selected-mzML-files"].append(filename)
+    
 
-@st.cache_data
+#@st.cache_data
 def save_uploaded_mzML(uploaded_files: list[bytes]) -> None:
     """
     Saves uploaded mzML files to the mzML directory.
@@ -38,17 +39,65 @@ def save_uploaded_mzML(uploaded_files: list[bytes]) -> None:
             st.warning("Upload some files first.")
             return
         
-    # Write files from buffer to workspace mzML directory, add to selected files
-    mzML_dir: Path = Path(st.session_state.workspace, "mzML-files")
+    error_files = []
+    success_files = []
+    already_files = []
     for f in uploaded_files:
+        mzML_dir: Path = Path(st.session_state.workspace, "mzML-files")
+        #st.info(f"file-name {f.name}")
+        #st.info(f"mzML-files directory:  {[f.name for f in mzML_dir.iterdir()]}")
+
+        # Check if the file ends with an invalid extension
+        if f.name.endswith(".raw.mzML"):
+            error_files.append(f.name)
+            continue
+        
+        if f.name in [f.name for f in mzML_dir.iterdir()]:
+            already_files.append(f.name)
+            continue
+
         if f.name not in [f.name for f in mzML_dir.iterdir()] and (f.name.endswith("mzML") or f.name.endswith("raw")):
             with open(Path(mzML_dir, f.name), "wb") as fh:
                 fh.write(f.getbuffer())
-        add_to_selected_mzML(Path(f.name).stem)
-    st.success("Successfully added uploaded files!")
+            add_to_selected_mzML(Path(f.name).stem)
+            success_files.append(f.name)
+        
+        #st.error(f"error_files:  {[f for f in error_files]}")
+        #st.success(f"success_files:  {[f for f in success_files]}")
+        #st.warning(f"already_files:  {[f for f in already_files]}")
 
+    
+    if len(error_files)>0:
+        if len(error_files)==1:
+            st.error(f"Error: The file '{error_files[0]}' has an invalid extension (.raw.mzML is not acceptable).")
+        else:
+            st.error( f"**Error: These files has an invalid extension (.raw.mzML is not acceptable).**\n\n" +
+                "\n".join([f"- {file}" for file in error_files]))
+    
+    if len(already_files) > 0:
+        if len(already_files) == 1:
+            st.warning(f"**The file '{already_files[0]}' already exists!** Please delete it before reuploading if necessary.")
+        else:
+            st.warning(
+                f"**The following files already exist!**\n"
+                f"Please delete them before reuploading if necessary:\n\n" +
+                "\n".join([f"- {file}" for file in already_files])
+            )
+    
+    if len(success_files)>0:
+        if len(success_files)==1:
+            if st.session_state.location == "local":
+                st.success(f"This file '{success_files[0]}' successfully uploaded.")
+            else:
+                st.success("Successfully added uploaded file!")
+        else:
+            st.success(
+                f"**These files are successfully uploaded:**\n\n" +
+                "\n".join([f"- {file}" for file in success_files])
+            )
+            
 
-@st.cache_data
+#@st.cache_data
 def copy_local_mzML_files_from_directory(local_mzML_directory: str) -> None:
     """
     Copies local mzML files from a specified directory to the mzML directory.
@@ -164,7 +213,7 @@ def add_to_selected_fasta(filename: str):
         st.session_state["selected-fasta-files"].append(filename)
 
 
-@st.cache_data
+#@st.cache_data
 def save_uploaded_fasta(uploaded_files: list[bytes]) -> None:
     """
     Saves uploaded fasta files to the fasta directory.
@@ -181,6 +230,8 @@ def save_uploaded_fasta(uploaded_files: list[bytes]) -> None:
     if st.session_state.location == "online":
         uploaded_files = [uploaded_files]
 
+    already_files = []
+    success_files = []
     # If no files are uploaded, exit early
     for f in uploaded_files:
         if f is None:
@@ -189,11 +240,40 @@ def save_uploaded_fasta(uploaded_files: list[bytes]) -> None:
         
     # Write files from buffer to workspace fasta directory, add to selected files
     for f in uploaded_files:
+
+        if f.name in [f.name for f in fasta_dir.iterdir()]:
+            #print(fasta_dir.iterdir())
+            already_files.append(f.name)
+            continue
+            
         if f.name not in [f.name for f in fasta_dir.iterdir()] and f.name.endswith("fasta"):
             with open(Path(fasta_dir, f.name), "wb") as fh:
                 fh.write(f.getbuffer())
-        add_to_selected_fasta(Path(f.name).stem)
-    st.success("Successfully added uploaded files!")
+            add_to_selected_fasta(Path(f.name).stem)
+            success_files.append(f.name)
+
+    if len(already_files) > 0:
+        if len(already_files) == 1:
+            st.warning(f"**The file '{already_files[0]}' already exists!** Please delete it before reuploading if necessary.")
+        else:
+            st.warning(
+                f"**The following files already exist!**\n"
+                f"Please delete them before reuploading if necessary:\n\n" +
+                "\n".join([f"- {file}" for file in already_files])
+            )
+    
+    if len(success_files)>0:
+        if len(success_files)==1:
+            if st.session_state.location == "local":
+                st.success(f"This file '{success_files[0]}' successfully uploaded.")
+            else:
+                st.success("Successfully added uploaded file!")
+        else:
+            st.success(
+                f"**These files are successfully uploaded:**\n\n" +
+                "\n".join([f"- {file}" for file in success_files])
+            )
+
 
 def load_example_fasta_files() -> None:
     """
@@ -214,7 +294,7 @@ def load_example_fasta_files() -> None:
         add_to_selected_fasta(f.stem)
     #st.success("Example fasta files loaded!")
 
-@st.cache_data
+#@st.cache_data
 def copy_local_fasta_files_from_directory(local_fasta_directory: str) -> None:
     """
     Copies local fasta files from a specified directory to the fasta directory.
@@ -280,6 +360,7 @@ import os
 def rename_files(directory: str) -> None:
     """
     Renames files in the given directory by removing '.raw' from files ending with '.raw.mzML'.
+    If a file with the target name already exists, it is deleted before renaming.
 
     Args:
         directory (str): The path to the directory containing the files to be renamed.
@@ -296,7 +377,33 @@ def rename_files(directory: str) -> None:
             # Construct full file paths
             old_file = os.path.join(directory, filename)
             new_file = os.path.join(directory, new_filename)
+            
+            # If the target file already exists, delete it
+            if os.path.exists(new_file):
+                os.remove(new_file)
+            
             # Rename the file
             os.rename(old_file, new_file)
+
+    return None
+
+def delete_files(directory: str, remove_files_end_with: str = '.raw.mzML') -> None:
+    """
+    delete all files in the given directory by removing '.raw.mzML'.
+
+    Args:
+        directory (str): The path to the directory containing the files to be renamed.
+
+    Returns:
+        None
+    """
+    # Iterate over all files in the given directory
+    for filename in os.listdir(directory):
+        # Check if the file ends with .raw.mzML
+        if filename.endswith(remove_files_end_with):
+           file_path = os.path.join(directory, filename)
+           os.remove(file_path)
+
+    # st.info("call delete files")
 
     return None
