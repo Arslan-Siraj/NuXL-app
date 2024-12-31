@@ -279,8 +279,8 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
             variables = []  
 
             # want to see the command values and argues
-            message = f"Running '{' '.join(args)}'"
-            st.info(message)
+            #message = f"Running '{' '.join(args)}'"
+            #st.info(message)
             st.info(f"Analyzing {mzML_file_path}",  icon="ℹ️")
 
             # run subprocess command
