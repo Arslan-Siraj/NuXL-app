@@ -155,8 +155,15 @@ jobs:
       with:
         name: openms-package
         path: |
-          ${{ github.workspace }}/OpenMS/bld/*
-          ${{ github.workspace }}/_thirdparty/*
+          #${{ github.workspace }}/OpenMS/bld/bin/*
+          #${{ github.workspace }}/_thirdparty/*
+          ${{ github.workspace }}/OpenMS/bld/bin/OpenNuXL.exe
+          ${{ github.workspace }}/OpenMS/bld/bin/PercolatorAdapter.exe
+          ${{ github.workspace }}/OpenMS/bld/bin/*.dll
+          ${{ github.workspace }}/_thirdparty/*.exe
+          ${{ github.workspace }}/_thirdparty/ThermoRawFileParser/**
+          ${{ github.workspace }}/_thirdparty/Percolator/**
+              
   build-executable:
     runs-on: windows-latest
     needs: build-openms
@@ -230,14 +237,17 @@ jobs:
         cp $PYTHON_DIR/DLLs/_tkinter.pyd $EMBED_DIR/
         cp $PYTHON_DIR/DLLs/tcl86t.dll $EMBED_DIR/
         cp $PYTHON_DIR/DLLs/tk86t.dll $EMBED_DIR/
+
     - name: Install pip
       run: |
         curl -O https://bootstrap.pypa.io/get-pip.py
         ./python-${{ env.PYTHON_VERSION }}/python get-pip.py --no-warn-script-location
         rm get-pip.py
+
     - name: Uncomment 'import site' in python311._pth file
       run: |
         sed -i 's/#import site/import site/' python-${{ env.PYTHON_VERSION }}/python311._pth
+
     - name: Install Required Packages
       run: .\python-${{ env.PYTHON_VERSION }}\python -m pip install --force-reinstall -r requirements.txt --no-warn-script-location
 
@@ -246,9 +256,11 @@ jobs:
         $content = Get-Content -Raw settings.json | ConvertFrom-Json
         $content.online_deployment = $false
         $content | ConvertTo-Json -Depth 100 | Set-Content settings.json
+
     - name: Create .bat file
       run: |
           echo " start /min .\python-${{ env.PYTHON_VERSION }}\python -m streamlit run app.py local" > ${{ env.APP_NAME }}.bat
+
     - name: Create All-in-one executable folder
       run: |
         if (Test-Path -Path "streamlit_exe") {
@@ -311,6 +323,7 @@ jobs:
         cat <<EOF > ShowSuccessMessage.vbs
         MsgBox "The ${{ env.APP_NAME }} application is successfully installed.", vbInformation, "Installation Complete"
         EOF
+
     - name: Prepare SourceDir
       run: |
         if (Test-Path -Path "SourceDir") {
