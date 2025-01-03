@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
 env:
   OPENMS_VERSION: 3.2.0 
+  # Define unique GUID for UpgradeCode
+  APP_UpgradeCode: "31703de0-3422-444a-a469-8df83635bd6d"
   # Define needed TOPP tools here
   TOPP_TOOLS: "OpenNuXL"
 
@@ -347,7 +349,7 @@ jobs:
         cat <<EOF > streamlit_exe.wxs
         <?xml version="1.0"?>
         <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-          <Product Id="f6182255-63cf-4eda-9173-39cfbf4a6c0e" Name="${{ env.APP_NAME }}" Language="1033" Version="1.0.0.0" Codepage="1252" Manufacturer="OpenMS Developer Team" UpgradeCode="e80a3a58-7410-4d2a-a35d-4ce3df8f2b53">
+          <Product Id="*" Name="${{ env.APP_NAME }}" Language="1033" Version="1.0.0.0" Codepage="1252" Manufacturer="OpenMS Developer Team" UpgradeCode="${{ env.APP_UpgradeCode }}">
             <Package Id="*" InstallerVersion="300" Compressed="yes" InstallPrivileges="elevated" Platform="x64" />
             <Media Id="1" Cabinet="streamlit.cab" EmbedCab="yes" />
         
