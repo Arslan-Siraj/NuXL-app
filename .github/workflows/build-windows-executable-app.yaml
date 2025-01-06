@@ -1,10 +1,13 @@
 name: Build executable for Windows
 on:
   push:
-    branches: [ "main" ]
+    branches: 
+      - main
+      - development
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+  
 env:
   OPENMS_VERSION: 3.2.0 
   # Define unique GUID for UpgradeCode
@@ -437,4 +440,4 @@ jobs:
       with:
         name: OpenMS-App
         path: |
-          ${{ env.APP_NAME }}.msi
+          OpenMS-App.zip
