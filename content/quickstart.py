@@ -28,24 +28,26 @@ Welp, L. M., Sachsenberg, T., Wulf, A., Chernev, A., Horokhovskyi, Y., Neumann, 
 [https://doi.org/10.1101/2024.08.29.610268](https://doi.org/10.1101/2024.08.29.610268)
 """)
 
-#In docker, OpenMS-app (executable) can be downloadable from github
-if Path("OpenMS-NuXL.zip").exists():
+#In docker, OpenMS-App (executable) can be downloadable from github
+if Path("OpenMS-App.zip").exists():
       st.markdown(
       """
       ## Installation
 
       ### Download for Windows
 
-      Simply download and extract the zip file. The folder contains an executable run_app file. No need to install anything.
+      Simply download. extract the zip file and run the installer (.msi) file to install the app. The app can then be launched using the corresponding desktop icon.
       """)
-      with open("OpenMS-NuXL.zip", "rb") as file:
+      with open("OpenMS-App.zip", "rb") as file:
             st.download_button(
                         label="Download for Windows",
                         data=file,
-                        file_name="OpenMS-NuXL.zip",
+                        file_name="OpenMS-App.zip",
                         mime="archive/zip",
                         type="primary"
                         )
+
+
 st.markdown("""
       ## Quickstart 
 
