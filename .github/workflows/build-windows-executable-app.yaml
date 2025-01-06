@@ -437,4 +437,4 @@ jobs:
       with:
         name: OpenMS-App
         path: |
-          ${{ env.APP_NAME }}.msi
+          OpenMS-App.zip
