@@ -1,7 +1,7 @@
 name: Build executable for Windows
 on:
   push:
-    branches: [ "development" ]
+    branches: [ "push" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
