@@ -36,7 +36,7 @@ if Path("OpenMS-App.zip").exists():
 
       ### Download for Windows
 
-      Simply download. extract the zip file and run the installer (.msi) file to install the app. The app can then be launched using the corresponding desktop icon.
+      Simply download, extract the zip file and run the installer (.msi) file to install the app. The app can then be launched using the corresponding desktop icon.
       """)
       with open("OpenMS-App.zip", "rb") as file:
             st.download_button(
