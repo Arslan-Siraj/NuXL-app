@@ -1,12 +1,32 @@
-version: "3"
+version: '3.8'
+
 services:
-  streamlit:
-    build: .
-    command: "streamlit run src/monitor.py local --server.enableCORS false " ### for checking as local add local
+   nuxl-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GITHUB_TOKEN: $GITHUB_TOKEN
+    image: nuxl_app
+    container_name: nuxl-app
+    restart: always
     ports:
-      - "8501:8501"
+      - 8501:8501 # increment port numbers (here 28504)
     volumes:
-      - "./src:/usr/src/app/src"
+      - workspaces-nuxl-app:/workspaces-nuxl-app
+    command: streamlit run nuxl-app/run.py
+volumes:
+    workspaces-nuxl-app:
+
+#version: "3"
+#services:
+#  streamlit:
+#    build: .
+#    command: "streamlit run src/monitor.py local --server.enableCORS false " ### for checking as local add local
+#    ports:
+#      - "8501:8501"
+#    volumes:
+#      - "./src:/usr/src/app/src"
 
 # docker-compose up --build (This command will build the Docker image using the provided Dockerfile and start the container)
 # Then can access via http://localhost:8501
