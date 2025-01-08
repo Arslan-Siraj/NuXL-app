@@ -4,21 +4,20 @@ Welcome to the OpenMS NuXL App, a web application for the NuXL protein-nucleic a
 **website:** [https://abi-services.cs.uni-tuebingen.de/nuxl/](https://abi-services.cs.uni-tuebingen.de/nuxl/)
 
 ## NuXL
-
 - **Description:** NuXL is a dedicated software package designed for the analysis of XL-MS (cross-linking mass spectrometry) data obtained from UV and chemically crosslinked protein–RNA/DNA samples. This powerful tool allows for reliable, FDR-controlled assignment of protein–nucleic acid crosslinking sites in samples treated with UV light or chemical crosslinkers. It offers user-friendly matched spectra visualization, including ion annotations.
 - **Reference:** Welp, L. M., Sachsenberg, T., Wulf, A., Chernev, A., Horokhovskyi, Y., Neumann, P., ... & Urlaub, H. (2024). Chemical crosslinking extends and complements UV crosslinking in analysis of RNA/DNA nucleic acid-protein interaction sites by mass spectrometry. bioRxiv, 2024-08. [https://doi.org/10.1101/2024.08.29.610268](https://doi.org/10.1101/2024.08.29.610268)
   
 **powered by:**
 
-<img src="assets/OpenMS.png" width=20%>
+<img src="assets/OpenMS.png" width=15%>
   
-<!-- ## Running NuXL locally: Installation as stand-alone tool
+## Running NuXL locally: Installation as stand-alone tool
 ### Windows
 1. To get started, download and extract the [OpenMS-App.zip](https://github.com/Arslan-Siraj/nuxl-app/actions) file from latest successfull action.
-2. Run the `run_app.exe`
-3. Use app in your default browser <br/> 
+2. After installation of `OpenMS-NuXLApp.msi`, The app can then be launched using the corresponding desktop icon.
+3. Use app in your default browser. <br/> 
 
-The workspaces for the project will be locally generated in the `workspaces-nuxl-app` directory, and the analysis will run using local resources. -->
+The workspaces for the project will be locally generated in the `workspaces-nuxl-app` directory, and the analysis will run using local resources.
    
 ## Quickstart 
 
