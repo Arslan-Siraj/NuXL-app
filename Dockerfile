@@ -13,6 +13,7 @@ ARG OPENMS_BRANCH=feature/NuXL
 ARG PORT=8501
 # GitHub token to download latest OpenMS executable for Windows from Github action artifact.
 ARG GITHUB_TOKEN
+ENV GH_TOKEN=${GITHUB_TOKEN}
 # Streamlit app Gihub user name (to download artifact from).
 ARG GITHUB_USER=Arslan-Siraj
 # Streamlit app Gihub repository name (to download artifact from).
@@ -182,7 +183,6 @@ RUN mamba run -n streamlit-env python hooks/hook-analytics.py
 RUN jq '.online_deployment = true' settings.json > tmp.json && mv tmp.json settings.json
 
 # Download latest OpenMS App executable for Windows from Github actions workflow.
-# GH_TOKEN
 RUN if [ -n "$GH_TOKEN" ]; then \
         echo "GH_TOKEN is set, proceeding to download the release asset..."; \
         gh run download -R ${GITHUB_USER}/${GITHUB_REPO} $(gh run list -R ${GITHUB_USER}/${GITHUB_REPO} -b main -e push -s completed -w "Build executable for Windows" --json databaseId -q '.[0].databaseId') -n OpenMS-App --dir /app; \
@@ -192,11 +192,5 @@ RUN if [ -n "$GH_TOKEN" ]; then \
 
 # Run app as container entrypoint.
 EXPOSE $PORT
-
-# List conda packages and filter
-#RUN conda list --explicit | grep -E "python|plotly|pandas|numpy|mono" > package_versions_in_docker.txt
-
-# List pip packages and filter, then append to the same file
-#RUN pip list --format=freeze | grep -E "streamlit|streamlit-plotly-events|streamlit-aggrid|pyopenms|captcha" >> package_versions_in_docker.txt
 
 ENTRYPOINT ["/app/entrypoint.sh"] 
