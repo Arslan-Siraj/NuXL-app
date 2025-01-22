@@ -47,8 +47,8 @@ def run_subprocess(args: list[str], variables: list[str], result_dict: dict) -> 
     if process.returncode == 0:
         result_dict["success"] = True
         # Save all lines from standard output to the log
-        result_dict["log"] = " ".join(stdout_)
+        result_dict["log"] = "\n".join(stdout_)
     else:
         result_dict["success"] = False
         # Save all lines from standard error to the log, even if the process encountered an error
-        result_dict["log"] = " ".join(stderr_)
+        result_dict["log"] = "\n".join(stderr_)
