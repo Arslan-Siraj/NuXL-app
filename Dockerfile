@@ -8,7 +8,7 @@
 # prune unused images/etc. to free disc space (e.g. might be needed on gitpod). Use with care.: docker system prune --all --force
 
 FROM ubuntu:22.04 AS setup-build-system
-ARG OPENMS_REPO=https://github.com/Arslan-Siraj/OpenMS.git # https://github.com/OpenMS/OpenMS.git
+ARG OPENMS_REPO=https://github.com/Arslan-Siraj/OpenMS.git # https://github.com/OpenMS/OpenMS.git # 
 ARG OPENMS_BRANCH=feature/NuXL
 ARG PORT=8501
 # GitHub token to download latest OpenMS executable for Windows from Github action artifact.
@@ -30,8 +30,19 @@ RUN apt-get install -y --no-install-recommends --no-install-suggests libboost-da
                                                                      libboost-iostreams1.74-dev \
                                                                      libboost-regex1.74-dev \
                                                                      libboost-math1.74-dev \
-                                                                     libboost-random1.74-dev
+                                                                     libboost-random1.74-d
+
 RUN apt-get install -y --no-install-recommends --no-install-suggests qtbase5-dev libqt5svg5-dev libqt5opengl5-dev
+
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+#    qt6-base-dev \
+#    qt6-tools-dev-tools \
+#    libqt6svg6-dev \
+#    libqt6opengl6-dev
+
+# apt-get install -y --no-install-recommends --no-install-suggests  install qqtbase5-dev libqt5svg5-dev libqt5opengl5-dev
+# libqt6svg6-dev qt6-base-dev qt6-base-dev-tools 
+# 
 
 # Install Github CLI
 RUN (type -p wget >/dev/null || (apt-get update && apt-get install wget -y)) \
@@ -53,7 +64,6 @@ RUN mamba --version
 # Setup mamba environment.
 COPY environment.yml ./environment.yml
 RUN mamba env create -f environment.yml
-
 RUN echo "mamba activate streamlit-env" >> ~/.bashrc
 SHELL ["/bin/bash", "--rcfile", "~/.bashrc"]
 SHELL ["mamba", "run", "-n", "streamlit-env", "/bin/bash", "-c"]
@@ -86,8 +96,11 @@ WORKDIR /
 RUN mkdir /openms-build
 WORKDIR /openms-build
 
+RUN apt-get -y update
+RUN apt-get install -y libqt6svg6-dev qt6-base-dev qt6-base-dev-tools
+
 # Configure.
-RUN /bin/bash -c "cmake -DCMAKE_BUILD_TYPE='Release' -DCMAKE_PREFIX_PATH='/OpenMS/contrib-build/;/usr/;/usr/local' -DHAS_XSERVER=OFF -DBOOST_USE_STATIC=OFF -DPYOPENMS=OFF ../OpenMS -DPY_MEMLEAK_DISABLE=On"
+RUN /bin/bash -c "cmake -DCMAKE_BUILD_TYPE='Release' -DCMAKE_PREFIX_PATH='/OpenMS/contrib-build/;/usr/;/usr/local;/usr/lib/qt6' -DHAS_XSERVER=OFF -DBOOST_USE_STATIC=OFF -DPYOPENMS=OFF ../OpenMS -DPY_MEMLEAK_DISABLE=On"
 
 # Build TOPP tools and clean up.
 RUN make -j4 TOPP
@@ -97,7 +110,6 @@ RUN rm -rf src doc CMakeFiles
 #RUN make -j4 pyopenms
 #WORKDIR /openms-build/pyOpenMS
 #RUN pip install dist/*.whl
-
 
 WORKDIR /
 RUN mkdir openms
@@ -122,8 +134,8 @@ RUN rm -rf openms-build
 RUN git clone --recursive --depth=1 -b develop --single-branch ${OPENMS_REPO} && cd /OpenMS
 
 # Pull Linux compatible third-party dependencies and store them in directory thirdparty.
-#WORKDIR /OpenMS
-#RUN git checkout develop
+WORKDIR /OpenMS
+RUN git checkout develop
 
 #RUN mkdir /thirdparty && \
 #    git submodule update --init THIRDPARTY && \
@@ -140,9 +152,11 @@ RUN git clone --recursive --depth=1 -b develop --single-branch ${OPENMS_REPO} &&
 RUN mkdir /openms-build_py
 WORKDIR /openms-build_py
 
-# Configure.
-RUN /bin/bash -c "cmake -DCMAKE_BUILD_TYPE='Release' -DCMAKE_PREFIX_PATH='/OpenMS/contrib-build/;/usr/;/usr/local' -DHAS_XSERVER=OFF -DBOOST_USE_STATIC=OFF -DPYOPENMS=ON ../OpenMS -DPY_MEMLEAK_DISABLE=On"
+RUN apt-get -y update
+RUN apt-get install -y libqt6svg6-dev qt6-base-dev qt6-base-dev-tools
 
+# Configure.
+RUN /bin/bash -c "cmake -DCMAKE_BUILD_TYPE='Release' -DCMAKE_PREFIX_PATH='/OpenMS/contrib-build/;/usr/;/usr/local;/usr/lib/qt6' -DHAS_XSERVER=OFF -DBOOST_USE_STATIC=OFF -DPYOPENMS=ON ../OpenMS -DPY_MEMLEAK_DISABLE=On"
 
 # Build pyOpenMS wheels and install via pip.
 RUN make -j4 pyopenms
@@ -170,9 +184,10 @@ COPY gdpr_consent/ /app/gdpr_consent
 RUN echo "0 3 * * * /root/mambaforge/envs/streamlit-env/bin/python /app/clean-up-workspaces.py >> /app/clean-up-workspaces.log 2>&1" | crontab -
 
 # create entrypoint script to start cron service and launch streamlit app
-RUN echo "#!/bin/bash" > /app/entrypoint.sh
-RUN echo "service cron start" >> /app/entrypoint.sh
-RUN echo "mamba run --no-capture-output -n streamlit-env streamlit run app.py" >> /app/entrypoint.sh
+RUN echo "#!/bin/bash" > /app/entrypoint.sh && \
+    echo "source /root/miniforge3/bin/activate streamlit-env" >> /app/entrypoint.sh && \
+    echo "service cron start" >> /app/entrypoint.sh && \
+    echo "streamlit run app.py" >> /app/entrypoint.sh
 # make the script executable
 RUN chmod +x /app/entrypoint.sh
 
@@ -193,4 +208,4 @@ RUN if [ -n "$GH_TOKEN" ]; then \
 # Run app as container entrypoint.
 EXPOSE $PORT
 
-ENTRYPOINT ["/app/entrypoint.sh"] 
+ENTRYPOINT ["/app/entrypoint.sh"]

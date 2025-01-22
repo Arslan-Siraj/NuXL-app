@@ -78,9 +78,9 @@ load_example_fasta_files()
 fasta_files = [f.name for f in Path(st.session_state.workspace,"fasta-files").iterdir()]
 
 # put Trypsin as first enzyme
-if 'Trypsin' in NuXL_config['enzyme']['restrictions']:
-    NuXL_config['enzyme']['restrictions'].remove('Trypsin')
-    NuXL_config['enzyme']['restrictions'].insert(0, 'Trypsin')
+if 'Trypsin/P' in NuXL_config['enzyme']['restrictions']:
+    NuXL_config['enzyme']['restrictions'].remove('Trypsin/P')
+    NuXL_config['enzyme']['restrictions'].insert(0, 'Trypsin/P')
 
 with st.form("fasta-upload", clear_on_submit=False):
 
