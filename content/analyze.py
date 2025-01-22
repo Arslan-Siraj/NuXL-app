@@ -316,8 +316,8 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
             Variable Max Modifications per Peptide: {Variable_max_per_peptide}
             Scoring Method: {scoring}
             """)
-
-    log_file_path = result_dir / f'{protocol_name}_log_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
+    time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file_path = result_dir / f'{protocol_name}_log_{time_stamp}.txt'
 
     # Save the log to a text file in the result_dir
     with open(log_file_path, "w") as log_file:
@@ -327,6 +327,7 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
 
     # if run_subprocess success (no need if not success because error will show/display in run_subprocess command)
     if result_dict["success"]:
+        st.text_area("Analysis Log", value=result_dict["log"], height=300)
 
         # add .mzML.ambigious_masses.csv in result directory 
         add_this_result_file(f"{protocol_name}.mzML.ambigious_masses.csv", Path(st.session_state.workspace, "mzML-files"))
@@ -358,4 +359,12 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
         # then download link for identification file of above criteria 
         download_selected_result_files(identification_files, f":arrow_down: {protocol_name}_XL_identification_files")
     
+    else:
+        # Display error message
+        st.error(
+                f"⚠️ **Analysis Failed**\n\n"
+                f"This might be due to incorrect or incompatible search parameters.\n"
+                f"Please refer at the log file '{protocol_name}_log_{time_stamp}.txt'"
+                )
+
 save_params(params)
