@@ -40,7 +40,9 @@ sections = [
     "mass_tolerance_unit", # will store in config dict both precursor_mass_tolerance, and fragmant_mass_tolerance
     "min_size",
     "max_size",
-    "missed_cleavages"
+    "missed_cleavages",
+    "peptideFDR", 
+    "xlFDR"
 ]
 
 # current directory
@@ -56,6 +58,8 @@ config_path = os.path.join(current_dir, 'assets', 'OpenMS_NuXL.ini')
         #"restrictions": restrictions_list
         # })
 NuXL_config=ini2dict(config_path, sections)
+
+#print(NuXL_config)
 
 # make sure "selected-mzML-files" is in session state
 if "selected-mzML-files" not in st.session_state:
@@ -179,7 +183,7 @@ with st.form("fasta-upload", clear_on_submit=False):
         fixed_modification = st.multiselect('select fixed modifications:', NuXL_config['fixed']['restrictions'], help=NuXL_config['fixed']['description'] + " default: "+ NuXL_config['fixed']['default'])
 
     with cols[1]: 
-        variable_modification = st.multiselect('select variable modifications:', NuXL_config['variable']['restrictions'], help=NuXL_config['variable']['description'] + " default: "+ NuXL_config['variable']['default'], default = "Oxidation (M)")
+        variable_modification = st.multiselect('select variable modifications:', NuXL_config['variable']['restrictions'], help=NuXL_config['variable']['description'] + " default: Oxidation (M)")
         
     cols=st.columns(2)
     with cols[0]:
@@ -195,6 +199,22 @@ with st.form("fasta-upload", clear_on_submit=False):
         help=NuXL_config['scoring']['description'] + " default: "+ NuXL_config['scoring']['default'],
         key="scoring"
         )
+
+    #with cols[2]:
+    #    peptideFDR = st.text_area(
+    #                    "peptide FDR",
+    #                    value=NuXL_config['peptideFDR']['default'],  # Default value
+    #                    help=NuXL_config['peptideFDR']['description'] +
+    #                        " Default: " + NuXL_config['peptideFDR']['default']
+    #                )
+        #st.selectbox('peptide FDR',NuXL_config['peptideFDR']['restrictions'], help=NuXL_config['peptideFDR']['description'] + " default: "+ NuXL_config['peptideFDR']['default'])
+    #with cols[3]:
+    #    peptideFDR =  st.text_area(
+    #                        "XL FDR",
+    #                        value=str([0.01, 0.1, 1.0]),  # Default value
+    #                        help=NuXL_config['xlFDR']['description'] +
+    #                            " Default: " + '[0.01, 0.1, 1.0]'
+    #                    )              
  
 # out file path
 result_dir: Path = Path(st.session_state.workspace, "result-files")
@@ -249,7 +269,7 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
                 args = [OpenNuXL_exec, "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
                                 "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
                                 "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
-                                "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
+                                "-peptide:min_size", peptide_min, "-peptide:max_size", peptide_max, "-peptide:missed_cleavages", Missed_cleavages, "-peptide:enzyme", Enzyme,
                                 "-modifications:variable_max_per_peptide", Variable_max_per_peptide
                                 ]
 
@@ -258,6 +278,8 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
             # If session state is online/docker
             else:  
 
+                report_fdr = str(1.0)
+                report_xl_fdr = str([0.01, 0.1, 1.0])
                 thermo_exec_path = "/thirdparty/ThermoRawFileParser/ThermoRawFileParser.exe"
                 # In docker it executable on path
                 args = ["OpenNuXL", "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
@@ -266,6 +288,8 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
                             "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
                             "-modifications:variable_max_per_peptide", Variable_max_per_peptide
                             ]
+
+            #"-report:peptideFDR", report_fdr, "-report:xlFDR", report_xl_fdr, "-report:xl_peptidelevel_FDR", report_xl_fdr,
 
             # If variable modification provided
             if variable_modification: 
@@ -281,8 +305,8 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
             variables = []  
 
             # want to see the command values and argues
-            #message = f"Running '{' '.join(args)}'"
-            #st.info(message)
+            message = f"Running '{' '.join(args)}'"
+            st.info(message)
             st.info(f"Analyzing {mzML_file_path}",  icon="ℹ️")
 
             # run subprocess command
@@ -342,7 +366,7 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
         current_analysis_files = [s for s in All_files if protocol_name in s]
 
         # add list of files to dataframe
-        df = pd.DataFrame({"output files ": current_analysis_files})
+        df = pd.DataFrame({"All files corresponding to search mzML/raw in workspace ": current_analysis_files})
 
         # show table of all list files of current protocol
         show_table(df)
