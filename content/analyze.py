@@ -10,6 +10,8 @@ from src.ini2dec import *
 import threading
 from src.captcha_ import *
 from src.run_subprocess import *
+import textwrap
+from datetime import datetime
 
 params = page_setup()
 
@@ -297,19 +299,41 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
 
         delete_files(directory = Path(st.session_state.workspace, "mzML-files"), remove_files_end_with = '.raw.mzML')
 
+    search_param = textwrap.dedent(f"""\
+            ======= Search Parameters ==========
+            Selected mzML File: {mzML_file_path}
+            Selected FASTA File: {database_file_path}
+            Enzyme: {Enzyme}
+            Missed Cleavages: {Missed_cleavages}
+            Peptide Min Length: {peptide_min}
+            Peptide Max Length: {peptide_max}
+            Precursor Mass Tolerance: {Precursor_MT} {Precursor_MT_unit}
+            Fragment Mass Tolerance: {Fragment_MT} {Fragment_MT_unit}
+            Preset: {preset}
+            Oligonucleotide Length: {length}
+            Fixed Modifications: {', '.join(fixed_modification) if fixed_modification else 'None'}
+            Variable Modifications: {', '.join(variable_modification) if variable_modification else 'None'}
+            Variable Max Modifications per Peptide: {Variable_max_per_peptide}
+            Scoring Method: {scoring}
+            """)
+    time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file_path = result_dir / f'{protocol_name}_log_{time_stamp}.txt'
+
+    # Save the log to a text file in the result_dir
+    with open(log_file_path, "w") as log_file:
+            log_file.write(search_param)
+            log_file.write("\n======= NuXL search engine output ========== \n ")
+            log_file.write(result_dict["log"])
+
     # if run_subprocess success (no need if not success because error will show/display in run_subprocess command)
     if result_dict["success"]:
+        st.text_area("Analysis Log", value=result_dict["log"], height=300)
 
         # add .mzML.ambigious_masses.csv in result directory 
         add_this_result_file(f"{protocol_name}.mzML.ambigious_masses.csv", Path(st.session_state.workspace, "mzML-files"))
         
         # remove .mzML.ambigious_masses.csv from mzML directory
         remove_this_mzML_file(f"{protocol_name}.mzML.ambigious_masses.csv")
-
-        # Save the log to a text file in the result_dir
-        log_file_path = result_dir / f"{protocol_name}_log.txt"
-        with open(log_file_path, "w") as log_file:
-            log_file.write(result_dict["log"])
 
         # all result files in result-dir
         All_files = [f.name for f in sorted(result_dir.iterdir())]
@@ -334,6 +358,13 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
 
         # then download link for identification file of above criteria 
         download_selected_result_files(identification_files, f":arrow_down: {protocol_name}_XL_identification_files")
-
+    
+    else:
+        # Display error message
+        st.error(
+                f"⚠️ **Analysis Failed**\n\n"
+                f"This might be due to incorrect or incompatible search parameters.\n"
+                f"Please refer at the log file '{protocol_name}_log_{time_stamp}.txt'"
+                )
 
 save_params(params)
