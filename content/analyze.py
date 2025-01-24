@@ -221,7 +221,7 @@ with st.form("fasta-upload", clear_on_submit=False):
                 XLFDR_input =  st.text_area(
                                     "XL FDR",
                                     value=str([0.01, 0.1, 1.0]),  # Default value
-                                    help=NuXL_config['xlFDR']['description'] + "or use single float (e-g 0.01)"
+                                    help=NuXL_config['xlFDR']['description'] + " or use single float (e-g 0.01). " + "For protein level reporting important to select (0.01 and 1.0). "
                                         " Default: " + '[0.01, 0.1, 1.0]'
                                 ) 
             

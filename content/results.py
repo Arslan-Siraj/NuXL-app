@@ -85,13 +85,12 @@ def get_mz_intensities_from_ms2(MS2_spectras, native_id):
     # If the native ID is not found, return None
     return None
 
-def remove_substrings(original_string, substrings_to_remove):
-    modified_string = original_string
-    for substring in substrings_to_remove:
-        modified_string = modified_string.replace(substring, "")
-    return modified_string
+import re
 
-nuxl_out_pattern = ["_perc_0.0100_XLs.idXML", "_0.0100_XLs.idXML", "_perc_0.1000_XLs.idXML", "_0.1000_XLs.idXML", "_perc_1.0000_XLs.idXML", "_1.0000_XLs.idXML"]
+def clean_filename_with_regex(filename):
+    # Pattern to match "_perc_X.XXXX_XLs.idXML" or "_X.XXXX_XLs.idXML"
+    pattern = r"(_perc_\d\.\d{4}_XLs\.idXML|_\d\.\d{4}_XLs\.idXML)"
+    return re.sub(pattern, "", filename)
 
 ########################
 
@@ -136,8 +135,9 @@ with tabs[0]:
 
             ##TODO setup more better/effiecient
             # Remove the out pattern of idxml
-            file_name_wout_out = remove_substrings(selected_file, nuxl_out_pattern)
-
+            #file_name_wout_out = remove_substrings(selected_file, nuxl_out_pattern)
+            file_name_wout_out = clean_filename_with_regex(selected_file)
+            
             if file_name_wout_out == "Example": 
                 file_name_wout_out = "Example_RNA_UV_XL"
 
@@ -295,7 +295,18 @@ with tabs[0]:
 
             #if the same protein file not available
             else:
-                st.warning(f"{protein_path.name} file not exist in current workspace")
+                match = re.search(r"proteins([\d.]+)_XLs", protein_path.name)
+                value = match.group(1) if match else None
+                if float(value)>0.1000:
+                    warning_message = f"NuXL not report at {value}, Protein-level reports at 1% and 10% FDR will only be displayed if XL FDR thresholds (0.01 and 0.10) are specified. NuXL generates reports exclusively for these FDR values, so ensure the thresholds are set accordingly."
+                else:
+                    warning_message = f"{protein_path.name} file not exist in current workspace, please rerun analysis or upload."
+
+                # Display the warning message across all tabs
+                for i, tab in enumerate(tabs_, start=1):
+                    with tab:
+                        if i != 1:  # Skip CSM 
+                             st.warning(warning_message)
 
     _ ="""
     tabs_ = st.tabs(["CSMs", "Proteins"])
