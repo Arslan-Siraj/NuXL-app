@@ -298,7 +298,7 @@ with tabs[0]:
                 match = re.search(r"proteins([\d.]+)_XLs", protein_path.name)
                 value = match.group(1) if match else None
                 if float(value)>0.1000:
-                    warning_message = f"NuXL not report at {value}, Protein-level reports at 1% and 10% FDR will only be displayed if XL FDR thresholds (0.01 and 0.10) are specified. NuXL generates reports exclusively for these FDR values, so ensure the thresholds are set accordingly."
+                    warning_message = f"Proteins are not reported at {value}. Protein reports are only generated at 1% and 10% FDR, and only if XL FDR thresholds (0.01 and 0.10) or higher are specified."
                 else:
                     warning_message = f"{protein_path.name} file not exist in current workspace, please rerun analysis or upload."
 
