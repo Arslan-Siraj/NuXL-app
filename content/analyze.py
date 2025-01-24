@@ -12,6 +12,7 @@ from src.captcha_ import *
 from src.run_subprocess import *
 import textwrap
 from datetime import datetime
+import ast
 
 params = page_setup()
 
@@ -142,7 +143,6 @@ with st.form("fasta-upload", clear_on_submit=False):
                 st.error("Precursor mass tolerance must be a positive integer")
 
         with cols_[1]:
-            #Precursor_MT_unit= st.selectbox('precursor mass tolerance unit',NuXL_config['precursor_mass_tolerance_unit']['restrictions'], help=NuXL_config['precursor_mass_tolerance_unit']['description'] + " default: "+ NuXL_config['precursor_mass_tolerance_unit']['default'])
             Precursor_MT_unit = cols_[1].radio(
             "precursor mass tolerance unit",
             NuXL_config['precursor_mass_tolerance_unit']['restrictions'], 
@@ -158,7 +158,6 @@ with st.form("fasta-upload", clear_on_submit=False):
                 st.error("Fragment mass tolerance must be a positive integer")
 
         with cols_[1]:
-            #Fragment_MT_unit= st.selectbox('fragment mass tolerance unit', NuXL_config['precursor_mass_tolerance_unit']['restrictions'], help=NuXL_config['fragment_mass_tolerance_unit']['description'] + " default: "+ NuXL_config['fragment_mass_tolerance_unit']['default'])
             Fragment_MT_unit = cols_[1].radio(
             "fragment mass tolerance unit",
             NuXL_config['precursor_mass_tolerance_unit']['restrictions'], 
@@ -176,10 +175,10 @@ with st.form("fasta-upload", clear_on_submit=False):
 
     cols=st.columns(2)
     with cols[0]:
-        fixed_modification = st.multiselect('select fixed modifications:', NuXL_config['fixed']['restrictions'], help=NuXL_config['fixed']['description'] + " default: "+ NuXL_config['fixed']['default'], default = "Oxidation (M)")
+        fixed_modification = st.multiselect('select fixed modifications:', NuXL_config['fixed']['restrictions'], help=NuXL_config['fixed']['description'] + " default: "+ NuXL_config['fixed']['default'])
 
     with cols[1]: 
-        variable_modification = st.multiselect('select variable modifications:', NuXL_config['variable']['restrictions'], help=NuXL_config['variable']['description'] + " default: Oxidation (M)")
+        variable_modification = st.multiselect('select variable modifications:', NuXL_config['variable']['restrictions'], help=NuXL_config['variable']['description'] + " default: Oxidation (M)" , default = "Oxidation (M)")
         
     cols=st.columns(2)
     with cols[0]:
@@ -188,7 +187,6 @@ with st.form("fasta-upload", clear_on_submit=False):
             st.error("variable modification max per peptide must be a positive integer")
 
     with cols[1]:
-        #scoring  = st.selectbox('select the scoring method',NuXL_config['scoring']['restrictions'], help=NuXL_config['scoring']['description'] + " default: "+ NuXL_config['scoring']['default'])
         scoring = cols[1].radio(
         "select the scoring method",
         [NuXL_config['scoring']['restrictions'][1], NuXL_config['scoring']['restrictions'][0]],
@@ -223,11 +221,10 @@ with st.form("fasta-upload", clear_on_submit=False):
                 XLFDR_input =  st.text_area(
                                     "XL FDR",
                                     value=str([0.01, 0.1, 1.0]),  # Default value
-                                    help=NuXL_config['xlFDR']['description'] +
-                                        " Default: " + '[0.01, 0.1, 1.0] or 0.01'
+                                    help=NuXL_config['xlFDR']['description'] + "or use single float (e-g 0.01)"
+                                        " Default: " + '[0.01, 0.1, 1.0]'
                                 ) 
-                # Parse the string into a Python list
-                import ast
+            
                 try:
                     # Attempt to parse the input as a Python list
                     parsed_value = ast.literal_eval(XLFDR_input)  # Safely evaluate the input
@@ -307,7 +304,7 @@ if submit_button:
                                 "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
                                 "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
                                 "-peptide:min_size", peptide_min, "-peptide:max_size", peptide_max, "-peptide:missed_cleavages", Missed_cleavages, "-peptide:enzyme", Enzyme,
-                                "-modifications:variable_max_per_peptide", Variable_max_per_peptide
+                                "-modifications:variable_max_per_peptide", Variable_max_per_peptide,"-report:peptideFDR", peptideFDR
                                 ]
 
                 args.extend(["-percolator_executable", perc_exec])
@@ -320,10 +317,17 @@ if submit_button:
                 args = ["OpenNuXL", "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
                             "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
                             "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,"-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
-                            "-modifications:variable_max_per_peptide", Variable_max_per_peptide,"-report:peptideFDR", peptideFDR                            ]
+                            "-modifications:variable_max_per_peptide", Variable_max_per_peptide,"-report:peptideFDR", peptideFDR                            
+                            ]
                 
             args.extend(["-report:xlFDR"])
             args.extend(XLFDR)
+
+            # no filtering at peptide level provides so all 1.0 (no filtering)
+            XLFDR_all_ones = [1.0] * len(XLFDR)
+            XLFDR_all_ones_str = [str(value) for value in XLFDR_all_ones]
+            args.extend(["-report:xl_peptidelevel_FDR"])
+            args.extend(XLFDR_all_ones_str)
 
             # If variable modification provided
             if variable_modification: 
@@ -339,9 +343,9 @@ if submit_button:
             variables = []  
 
             # want to see the command values and argues
-            message = f"Running '{' '.join(args)}'"
-            st.info(message)
-            st.info(f"Analyzing {mzML_file_path}",  icon="ℹ️")
+            #message = f"Running '{' '.join(args)}'"
+            #st.info(message)
+            st.info(f"Analyzing {mzML_file_name}",  icon="ℹ️")
 
             # run subprocess command
             run_subprocess(args, variables, result_dict)
