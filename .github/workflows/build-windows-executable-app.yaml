@@ -23,7 +23,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        repository: Arslan-Siraj/OpenMS #OpenMS/OpenMS
+        repository: OpenMS/OpenMS #Arslan-Siraj/OpenMS
         ref: feature/NuXL #release/${{ env.OPENMS_VERSION }}
         path: 'OpenMS'
 
